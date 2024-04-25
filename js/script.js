@@ -21,7 +21,7 @@ document.querySelector('#entrar').addEventListener('click', (evt) => {
 });
 
 const entrarUser = (nick) =>{
-	fetch(urlApi+"/entrar", {
+	fetch(urlAPI+"/entrar", {
     method: "POST",
     headers: {"Content-type": "application/json;charset=UTF-8"}, 
     body:JSON.stringify({nick: nick}) 
@@ -48,7 +48,7 @@ const entrarUser = (nick) =>{
 // listar salas
 const mostrarSalas = () => {
   if (user.token && user.nick) {
-      fetch(urlApi + "/salas", {
+      fetch(urlAPI + "/salas", {
               method: "GET",
               headers: {
                   'Content-Type': 'application/json',
@@ -92,37 +92,100 @@ const mostrarSalas = () => {
   }
 }
 // entrar na sala
-const entrarNaSala = (idSala) => {
+function entrarNaSala(idSala) {
+    fetch(${urlAPI}/sala/entrar?idsala=${idSala}, {
+        method: "PUT",
+        headers: {
+            'Content-Type': 'application/json',
+            'nick': user.nick,
+            'token': user.token,
+            'idUser': user.idUser
+        }
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        console.log(data);
+        if (data.msg === 'OK') { 
+            const time = data.timestamp;
+            
+            mensagensSala.style.display = 'block';
+            salaSelecionadaId = idSala;
 
-    fetch(`${urlApi}/sala/entrar?idsala=${idSala}`, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json',
-                'nick': user.nick,
-                'token': user.token,
-                'idUser': user.idUser
-            }
-        })
-        .then((res) => res.json())
-        .then((data) => {
-            console.log(data);
-            if (data.msg === 'OK') { 
-                const time = data.timestamp;
-               
-                mostrarMensagens(idSala, time);
-          } else {
-              console.log("Resposta da API inválida:", data);
-          }
-        })
-        .catch((error) => {
-            console.error("Erro na requisição:", error);
-        });
+            document.querySelector('#enviar-mensagem').addEventListener('click', (evt) => {
+                evt.preventDefault(); 
+                let msg = document.querySelector('#input-mensagem').value;
+              
+                enviarMensagem(msg,salaSelecionadaId);
+                mostrarMensagens(salaSelecionadaId, time);
+            
+
+                    listaSalas.style.display='none';
+                });
+            
+
+            // Iniciar atualização de mensagens periodicamente após entrar na sala
+            atualizarMensagensPeriodicamente()
+        }else {
+            console.log("Resposta da API inválida:", data);
+        }
+    })
+    .catch((error) => {
+        console.error("Erro na requisição:", error);
+    });
 }
-// mostrar msg
+
+
+
+
+function enviarMensagem(msg, salaSelecionadaId) {
+    fetch(${urlAPI}/sala/mensagem?idSala=${salaSelecionadaId}, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'nick': user.nick,
+            'token': user.token,
+            'idUser': user.idUser
+        },
+        body: JSON.stringify({
+            idSala: salaSelecionadaId,
+            msg: msg
+        })
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        console.log(data);
+        if (data.msg === 'OK') {
+            // Limpar campo de mensagem após o envio
+            inputMensagem.value = "";
+            // Mostrar aviso de mensagem enviada
+            exibirAviso("Mensagem enviada: " + msg);
+            // Atualizar mensagens na sala após o envio
+            mostrarMensagens(salaSelecionadaId);
+        } else {
+            console.log("Resposta da API inválida:", data);
+        }
+    })
+    .catch((error) => {
+        console.error("Erro na requisição:", error);
+    });
+}
+
+// Função para exibir aviso de mensagem enviada
+function exibirAviso(aviso) {
+    console.log(aviso);
+}
+
+// Atualizar mensagens periodicamente
+function atualizarMensagensPeriodicamente() {
+    if (salaSelecionadaId) {
+        mostrarMensagens(salaSelecionadaId);
+        setTimeout(atualizarMensagensPeriodicamente, 5000); // Atualizar a cada 5 segundos
+    }
+}
 function mostrarMensagens(idSala, time) {
-  salaSelecionadaId = idSala;
+    salaSelecionadaId = idSala;
  
-    fetch(`${urlApi}/sala/mensagens?idSala=${idSala}&timestamp=`,{
+    fetch(${urlAPI}/sala/mensagens?idSala=${idSala}&timestamp=,{
         method: "GET",
         headers: {
             'Content-Type': 'application/json',
@@ -135,15 +198,12 @@ function mostrarMensagens(idSala, time) {
     .then((data) => {
         if (data) {
             mensagensContainer.innerHTML = "";
-
+ 
             data.forEach((msgs) => {
                 const mensagemElement = document.createElement("div");
-                mensagemElement.textContent = `${nick.nick}: ${msgs.msg}`;
+                mensagemElement.textContent = ${msgs.nick}: ${msgs.msg};
                 mensagensContainer.appendChild(mensagemElement);
             });
-
-            mensagensSala.style.display = 'block';
-
         } else {
             console.error("Resposta da API não contém dados");
         }
@@ -151,7 +211,6 @@ function mostrarMensagens(idSala, time) {
     .catch((error) => {
         console.error("Erro na requisição lista msg:", error);
     });
-
 }
 
 
