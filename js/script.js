@@ -21,7 +21,7 @@ document.querySelector('#entrar').addEventListener('click', (evt) => {
 });
 
 const entrarUser = (nick) =>{
-	fetch(urlAPI+"/entrar", {
+	fetch(urlApi+"/entrar", {
     method: "POST",
     headers: {"Content-type": "application/json;charset=UTF-8"}, 
     body:JSON.stringify({nick: nick}) 
@@ -48,7 +48,7 @@ const entrarUser = (nick) =>{
 // listar salas
 const mostrarSalas = () => {
   if (user.token && user.nick) {
-      fetch(urlAPI + "/salas", {
+      fetch(urlApi + "/salas", {
               method: "GET",
               headers: {
                   'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const mostrarSalas = () => {
 }
 // entrar na sala
 function entrarNaSala(idSala) {
-    fetch(${urlAPI}/sala/entrar?idsala=${idSala}, {
+    fetch(`${urlApi}/sala/entrar?idsala=${idSala}`,{
         method: "PUT",
         headers: {
             'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ function entrarNaSala(idSala) {
 
 
 function enviarMensagem(msg, salaSelecionadaId) {
-    fetch(${urlAPI}/sala/mensagem?idSala=${salaSelecionadaId}, {
+    fetch(`${urlApi}/sala/mensagem?idSala=${salaSelecionadaId}`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ function atualizarMensagensPeriodicamente() {
 function mostrarMensagens(idSala, time) {
     salaSelecionadaId = idSala;
  
-    fetch(${urlAPI}/sala/mensagens?idSala=${idSala}&timestamp=,{
+    fetch(`${urlApi}/sala/mensagens?idSala=${idSala}&timestamp=`,{
         method: "GET",
         headers: {
             'Content-Type': 'application/json',
@@ -201,7 +201,7 @@ function mostrarMensagens(idSala, time) {
  
             data.forEach((msgs) => {
                 const mensagemElement = document.createElement("div");
-                mensagemElement.textContent = ${msgs.nick}: ${msgs.msg};
+                mensagemElement.textContent = `${msgs.nick}: ${msgs.msg}`;
                 mensagensContainer.appendChild(mensagemElement);
             });
         } else {
